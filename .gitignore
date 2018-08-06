@@ -7,3 +7,6 @@ build
 # Doxygen files
 html
 latex
+
+# Sandbox for testing ideas
+sandbox
