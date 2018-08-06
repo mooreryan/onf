@@ -1,0 +1,9 @@
+# CLion project stuff
+.idea
+
+# Ceedling test builds
+build
+
+# Doxygen files
+html
+latex
