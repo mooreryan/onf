@@ -16,23 +16,27 @@ void tearDown(void)
 void test___onf_encode_seq___should_EncodeTheSequence(void)
 {
   char* seq = "AaCcTtGgNnXx";
-  size_t len = 12;
-  int encoded_seq[] = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4 };
+  size_t len           = 12;
+  int    encoded_seq[] = {0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4};
 
   int* actual = onf_encode_seq(seq, len);
 
   TEST_ASSERT_EQUAL_INT_ARRAY(encoded_seq, actual, len);
+
+  free(actual);
 }
 
 void test___onf_encode_seq___should_EncodeWeirdCharsAs4(void)
 {
   char* seq = "@% _-?";
-  size_t len = 6;
-  int encoded_seq[] = { 4, 4, 4, 4, 4, 4 };
+  size_t len           = 6;
+  int    encoded_seq[] = {4, 4, 4, 4, 4, 4};
 
   int* actual = onf_encode_seq(seq, len);
 
   TEST_ASSERT_EQUAL_INT_ARRAY(encoded_seq, actual, len);
+
+  free(actual);
 }
 
 void test___onf_encode_seq___should_ReturnNullWithBadString(void)
@@ -43,19 +47,31 @@ void test___onf_encode_seq___should_ReturnNullWithBadString(void)
   int* actual = onf_encode_seq(seq, len);
 
   TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, actual);
+
+  free(actual);
 }
 
 ////////////////////
 
 void test___onf_hash_encoded_seq___should_HashTheSeq(void)
 {
-  int encoded_seq[] = { 2, 3 };
-  size_t len = 2;
-  int expected = 11;
-  int actual = onf_hash_encoded_seq(encoded_seq, len);
+  int    encoded_seq[] = {2, 3};
+  size_t len           = 2;
+  int    expected      = 11;
+  int    actual        = onf_hash_encoded_seq(encoded_seq, len);
 
   TEST_ASSERT_EQUAL_INT(expected, actual);
 }
+
+void test___onf_hash_encoded_seq___should_ReturnAnErrorCodeIfHasAmbigChars(void)
+{
+  int    encoded_seq[] = {0, 1, 2, 3, 4};
+  size_t len           = 5;
+  int    actual        = onf_hash_encoded_seq(encoded_seq, len);
+
+  TEST_ASSERT_EQUAL_INT(ONF_ERROR_INT, actual);
+}
+
 
 void test___onf_hash_encoded_seq___should_HandleBadInput(void)
 {
@@ -69,8 +85,8 @@ void test___onf_hash_encoded_seq___should_HandleBadInput(void)
 
 void test___onf_hash_encoded_seq___should_HashProperly(void)
 {
-  int size = 3;
-  int actual = 0;
+  int size     = 3;
+  int actual   = 0;
   int expected = 0;
   int* encoded_seq = malloc(sizeof(int) * size);
 
@@ -90,15 +106,17 @@ void test___onf_hash_encoded_seq___should_HashProperly(void)
       }
     }
   }
+
+  free(encoded_seq);
 }
 
 ////////////////////
 
 void test___onf_kmer_count_array_new___should_ReturnNewKmerCountArray(void)
 {
-  size_t size = 2;
+  size_t size        = 2;
   size_t output_size = 16;
-  int expected[] = {
+  int    expected[]  = {
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,
@@ -108,6 +126,8 @@ void test___onf_kmer_count_array_new___should_ReturnNewKmerCountArray(void)
   int* actual = onf_kmer_count_array_new(size);
 
   TEST_ASSERT_EQUAL_INT_ARRAY(expected, actual, output_size);
+
+  free(actual);
 }
 
 void test___onf_kmer_count_array_new___should_ReturnErrorIfSizeIsBad(void)
@@ -116,5 +136,83 @@ void test___onf_kmer_count_array_new___should_ReturnErrorIfSizeIsBad(void)
 
   int* actual = onf_kmer_count_array_new(size);
 
+  TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, actual);
+
+  free(actual);
+}
+
+////////////////////
+
+void test___onf_hash_lower_order_kmer___should_ReturnHashValOfLowerOrderKmer(void)
+{
+  int kmer3[]        = {0, 1, 2};
+  int kmer2[]        = {0, 1};
+  int how_much_lower = 1;
+
+  int kmer3_hash = onf_hash_encoded_seq(kmer3, 3);
+
+  int expected = onf_hash_encoded_seq(kmer2, 2);
+
+  int actual = onf_hash_lower_order_kmer(kmer3_hash, how_much_lower);
+
+  TEST_ASSERT_EQUAL_INT(expected, actual);
+}
+
+void test___onf_hash_lower_order_kmer___HandlesAnyLowerOrder(void)
+{
+  int kmer3[]        = {0, 1, 2};
+  int kmer1[]        = {0};
+  int how_much_lower = 2;
+
+  int kmer3_hash = onf_hash_encoded_seq(kmer3, 3);
+
+  int expected = onf_hash_encoded_seq(kmer1, 1);
+
+  int actual = onf_hash_lower_order_kmer(kmer3_hash, how_much_lower);
+
+  TEST_ASSERT_EQUAL_INT(expected, actual);
+}
+
+////////////////////
+
+void test___onf_count_kmers___should_ReturnKmerCountsForSequence(void)
+{
+  // encoded kmers are {0, 1}, {1, 2}, {2, 3}, {3, 0}, {0, 1}
+  char* seq = "actgac"; // {0, 1, 2, 3, 0, 1}
+
+  size_t kmer_size = 2, seq_len = 6;
+
+  int counts[] = {
+      0, 2, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+      1, 0, 0, 0,
+  };
+
+  int* actual = onf_count_kmers(seq, seq_len, kmer_size);
+
+  TEST_ASSERT_EQUAL_INT_ARRAY(counts, actual, 16);
+
+  free(actual);
+}
+
+void test___onf_count_kmers___should_ReturnErrorOnBadInput(void)
+{
+  int* actual = NULL;
+
+  // Null pointer for seq
+  actual = onf_count_kmers(NULL, 10, 2);
+  TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, actual);
+
+  // seq_len < 1
+  actual = onf_count_kmers("actg", 0, 0);
+  TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, actual);
+
+  // kmer_size < 1
+  actual = onf_count_kmers("actg", 10, 0);
+  TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, actual);
+
+  // kmer_size > seq_len
+  actual = onf_count_kmers("actg", 10, 20);
   TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, actual);
 }

@@ -7,7 +7,7 @@
 #ifndef _ONF_H
 #define _ONF_H
 
-#define ONF_ERROR_INT -1
+#define ONF_ERROR_INT -10
 #define ONF_ERROR_PTR NULL
 
 /**
@@ -64,8 +64,11 @@ int* onf_encode_seq(char* seq, size_t len);
  * @param encoded_seq For example, the output of onf_hash_encoded_seq()
  * @param len Length of the encoded seq.
  *
+ * @note I will return an error value if the kmer you're trying to hash doesn't have 0 - 3 for every value.  I.e., if it has any chars other than 'AaCcTtGg'.
+ *
  * @retval hashed_sequence e.g., 11 for { 2, 3 }
  * @retval ONF_ERROR_INT if there are errors
+ * @retval ONF_ERROR_INT if the encoded seq has non 0, 1, 2, 3 values (i.e. non A C T G )
  */
 int onf_hash_encoded_seq(int* encoded_seq, size_t len);
 
@@ -77,5 +80,9 @@ int onf_hash_encoded_seq(int* encoded_seq, size_t len);
  * @retval ONF_ERROR_PTR if there were errors or there was a bad size.
  */
 int* onf_kmer_count_array_new(size_t size);
+
+int onf_hash_lower_order_kmer(int hashed_kmer, int how_much_lower);
+
+int* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_size);
 
 #endif // _ONF_H
