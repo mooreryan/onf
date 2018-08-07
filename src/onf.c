@@ -1,22 +1,23 @@
 #include <stdlib.h>
 #include <math.h>
+#include <stdint.h>
 
 #include <stdio.h> // For debug
 
 #include "const.h"
 #include "onf.h"
 
-ONF_ARRAY_FUNCTIONS(int)
+ONF_ARRAY_FUNCTIONS(int32_t)
 
 /* See onf.h for documentation. */
 
-struct onf_int_array* onf_encode_seq(char* seq, size_t len)
+struct onf_int32_t_array* onf_encode_seq(char* seq, size_t len)
 {
   if (seq == NULL) { return ONF_ERROR_PTR; }
 
-  struct onf_int_array* encoded_seq = onf_int_array_new(len);
+  struct onf_int32_t_array* encoded_seq = onf_int32_t_array_new(len);
 
-  if (onf_int_array_bad(encoded_seq)) { return ONF_ERROR_PTR; }
+  if (onf_int32_t_array_bad(encoded_seq)) { return ONF_ERROR_PTR; }
 
   size_t bad_chars = 0;
   size_t new_i     = 0;
@@ -55,18 +56,18 @@ struct onf_int_array* onf_encode_seq(char* seq, size_t len)
   return encoded_seq;
 }
 
-int onf_hash_int_array(struct onf_int_array* ary)
+int32_t  onf_hash_int32_t_array(struct onf_int32_t_array* ary)
 {
-  if (onf_int_array_bad(ary) || ary->length > 15) { return ONF_ERROR_INT; }
+  if (onf_int32_t_array_bad(ary) || ary->length > 15) { return ONF_ERROR_INT32_T; }
 
-  int hashed_val = 0;
-  int val        = 0;
+  int32_t  hashed_val = 0;
+  int32_t  val        = 0;
 
   for (size_t i = 0; i < ary->length; ++i) {
     val = ary->array[i];
 
     // Only values between 0 and 3 are allowed.
-    if (val < 0 || val > 3) { return ONF_ERROR_INT; }
+    if (val < 0 || val > 3) { return ONF_ERROR_INT32_T; }
 
     hashed_val += ((1 << (2 * (ary->length - 1 - i))) * ary->array[i]);
   }
@@ -74,24 +75,24 @@ int onf_hash_int_array(struct onf_int_array* ary)
   return hashed_val;
 }
 
-struct onf_int_array* onf_kmer_count_array_new(size_t size)
+struct onf_int32_t_array* onf_kmer_count_array_new(size_t size)
 {
   if (size < 1) { return ONF_ERROR_PTR; }
 
-  struct onf_int_array* counts = onf_int_array_new((size_t) pow(4, size));
+  struct onf_int32_t_array* counts = onf_int32_t_array_new((size_t) pow(4, size));
 
   if (counts == NULL) { return ONF_ERROR_PTR; }
 
   return counts;
 }
 
-int onf_hash_lower_order_kmer(int hashed_kmer, int how_much_lower)
+int32_t  onf_hash_lower_order_kmer(int32_t hashed_kmer, int32_t how_much_lower)
 {
   // hashed_kmer / pow(2, 2 * how_much_lower)
   return hashed_kmer >> (2 * how_much_lower);
 }
 
-struct onf_int_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_size)
+struct onf_int32_t_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_size)
 {
   // Check args
   if (seq == NULL ||
@@ -102,20 +103,20 @@ struct onf_int_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_siz
     return ONF_ERROR_PTR;
   }
 
-  struct onf_int_array* counts = onf_kmer_count_array_new(kmer_size);
-  int hashed_kmer = 0;
+  struct onf_int32_t_array* counts = onf_kmer_count_array_new(kmer_size);
+  int32_t hashed_kmer = 0;
 
-  struct onf_int_array* encoded_seq = onf_encode_seq(seq, seq_len);
+  struct onf_int32_t_array* encoded_seq = onf_encode_seq(seq, seq_len);
 
-  struct onf_int_array* tmp_ary = onf_int_array_new(encoded_seq->length);
+  struct onf_int32_t_array* tmp_ary = onf_int32_t_array_new(encoded_seq->length);
   tmp_ary->length = kmer_size;
 
   for (size_t i = 0; i < encoded_seq->length - kmer_size + 1; ++i) {
     tmp_ary->array = &encoded_seq->array[i];
 
-    hashed_kmer = onf_hash_int_array(tmp_ary);
+    hashed_kmer = onf_hash_int32_t_array(tmp_ary);
 
-    if (hashed_kmer != ONF_ERROR_INT) {
+    if (hashed_kmer != ONF_ERROR_INT32_T) {
       ++(counts->array[hashed_kmer]);
     }
   }
@@ -123,7 +124,7 @@ struct onf_int_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_siz
   return counts;
 }
 
-struct onf_int_array** onf_count_kmers2(char* seq, size_t seq_len)
+struct onf_int32_t_array** onf_count_kmers2(char* seq, size_t seq_len)
 {
   // Check args
   if (seq == NULL ||
@@ -132,47 +133,47 @@ struct onf_int_array** onf_count_kmers2(char* seq, size_t seq_len)
   }
 
   // Set up count arrays
-  struct onf_int_array* counts6 = onf_kmer_count_array_new(6);
+  struct onf_int32_t_array* counts6 = onf_kmer_count_array_new(6);
   if (counts6 == ONF_ERROR_PTR) { return ONF_ERROR_PTR; }
 
-  struct onf_int_array* counts8 = onf_kmer_count_array_new(8);
+  struct onf_int32_t_array* counts8 = onf_kmer_count_array_new(8);
   if (counts8 == ONF_ERROR_PTR) { return ONF_ERROR_PTR; }
 
-  struct onf_int_array* counts9 = onf_kmer_count_array_new(9);
+  struct onf_int32_t_array* counts9 = onf_kmer_count_array_new(9);
   if (counts9 == ONF_ERROR_PTR) { return ONF_ERROR_PTR; }
 
 
   // Set up other vars
   size_t kmer_size = 9, i = 0;
 
-  int hashed_kmer9 = 0, hashed_kmer8 = 0, hashed_kmer6 = 0;
+  int32_t hashed_kmer9 = 0, hashed_kmer8 = 0, hashed_kmer6 = 0;
 
-  struct onf_int_array* encoded_seq = onf_encode_seq(seq, seq_len);
+  struct onf_int32_t_array* encoded_seq = onf_encode_seq(seq, seq_len);
 
-  struct onf_int_array* tmp_ary = onf_int_array_new(encoded_seq->length);
+  struct onf_int32_t_array* tmp_ary = onf_int32_t_array_new(encoded_seq->length);
   tmp_ary->length = kmer_size;
 
 
-  int num_9mers = encoded_seq->length - kmer_size + 1;
+  int32_t num_9mers = encoded_seq->length - kmer_size + 1;
 
   // Do the counting
   for (i = 0; i < num_9mers; ++i) {
     tmp_ary->array = &encoded_seq->array[i];
 
-    hashed_kmer9 = onf_hash_int_array(tmp_ary);
+    hashed_kmer9 = onf_hash_int32_t_array(tmp_ary);
 
     hashed_kmer8 = onf_hash_lower_order_kmer(hashed_kmer9, 1);
     hashed_kmer6 = onf_hash_lower_order_kmer(hashed_kmer9, 3);
 
-    if (hashed_kmer9 != ONF_ERROR_INT) {
+    if (hashed_kmer9 != ONF_ERROR_INT32_T) {
       ++(counts9->array[hashed_kmer9]);
     }
 
-    if (hashed_kmer8 != ONF_ERROR_INT) {
+    if (hashed_kmer8 != ONF_ERROR_INT32_T) {
       ++(counts8->array[hashed_kmer8]);
     }
 
-    if (hashed_kmer6 != ONF_ERROR_INT) {
+    if (hashed_kmer6 != ONF_ERROR_INT32_T) {
       ++(counts6->array[hashed_kmer6]);
     }
   }
@@ -183,14 +184,14 @@ struct onf_int_array** onf_count_kmers2(char* seq, size_t seq_len)
   tmp_ary->length = kmer_size;
 
   // Get the 8mer at this pos.
-  hashed_kmer8 = onf_hash_int_array(tmp_ary);
-  if (hashed_kmer8 != ONF_ERROR_INT) {
+  hashed_kmer8 = onf_hash_int32_t_array(tmp_ary);
+  if (hashed_kmer8 != ONF_ERROR_INT32_T) {
     ++(counts8->array[hashed_kmer8]);
   }
 
   // Get the 6mer at this pos.
   hashed_kmer6 = onf_hash_lower_order_kmer(hashed_kmer8, 2);
-  if (hashed_kmer6 != ONF_ERROR_INT) {
+  if (hashed_kmer6 != ONF_ERROR_INT32_T) {
     ++(counts6->array[hashed_kmer6]);
   }
 
@@ -198,18 +199,18 @@ struct onf_int_array** onf_count_kmers2(char* seq, size_t seq_len)
   kmer_size = 6;
   tmp_ary->length = kmer_size;
 
-  int num_6mers = encoded_seq->length - kmer_size + 1;
+  int32_t num_6mers = encoded_seq->length - kmer_size + 1;
 
   for (size_t z = i; z < num_6mers; ++z) {
     tmp_ary->array = &encoded_seq->array[z];
-    hashed_kmer6 = onf_hash_int_array(tmp_ary);
-    if (hashed_kmer6 != ONF_ERROR_INT) {
+    hashed_kmer6 = onf_hash_int32_t_array(tmp_ary);
+    if (hashed_kmer6 != ONF_ERROR_INT32_T) {
       ++(counts6->array[hashed_kmer6]);
     }
   }
 
   // Make the struct to hold the output.
-  struct onf_int_array** arrays = malloc(3 * sizeof(struct onf_int_array*));
+  struct onf_int32_t_array** arrays = malloc(3 * sizeof(struct onf_int32_t_array*));
   if (arrays == NULL) { return ONF_ERROR_PTR; }
 
   arrays[0] = counts6;

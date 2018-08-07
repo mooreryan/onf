@@ -56,6 +56,6 @@
     }                                                                   \
   }                                                                     \
 
-ONF_ARRAY_DECLARATIONS(int)
+ONF_ARRAY_DECLARATIONS(int32_t)
 
 #endif // _ARRAY_H
