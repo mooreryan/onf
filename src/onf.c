@@ -57,7 +57,7 @@ struct onf_int_array* onf_encode_seq(char* seq, size_t len)
 
 int onf_hash_int_array(struct onf_int_array* ary)
 {
-  if (onf_int_array_bad(ary)) { return ONF_ERROR_INT; }
+  if (onf_int_array_bad(ary) || ary->length > 15) { return ONF_ERROR_INT; }
 
   int hashed_val = 0;
   int val        = 0;

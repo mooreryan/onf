@@ -152,6 +152,20 @@ void test___onf_hash_int_array___should_BigHashTest1(void)
   TEST_ASSERT_EQUAL(1073741823, hashed);
 }
 
+void test___onf_hash_int_array___should_ReturnErrorOnOverflow(void)
+{
+  int len    = 16; // should be big enough to overflow... 4 ** 16
+  int ints[] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
+
+  struct onf_int_array* ary = onf_int_array_new(len);
+  ary->array = (int*) &ints;
+
+  int hashed = onf_hash_int_array(ary);
+
+  TEST_ASSERT_EQUAL(ONF_ERROR_INT, hashed);
+}
+
+
 //////////////////////
 
 void test___onf_kmer_count_array_new___should_ReturnNewKmerCountArray(void)

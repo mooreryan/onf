@@ -64,9 +64,12 @@ struct onf_int_array* onf_encode_seq(char* seq, size_t len);
  *
  * @note I will return an error value if the kmer you're trying to hash doesn't have 0 - 3 for every value.  I.e., if it has any chars other than 'AaCcTtGg'.
  *
+ * @warning If you try and hash an int_array with length > 15, I will return an error as you may overflow the integer!
+ *
  * @retval hashed_sequence e.g., 11 for { 2, 3 }
  * @retval ONF_ERROR_INT if there are errors
- * @retval ONF_ERROR_INT if the encoded seq has non 0, 1, 2, 3 values (i.e. non A C T G )
+ * @retval ONF_ERROR_INT if the encoded seq has non 0, 1, 2, 3 values (i.e. non A C T G ).
+ * @retval ONF_ERROR_INT if int_array size is > 15.  Anything bigger than this could overflow the integer.
  */
 int onf_hash_int_array(struct onf_int_array* ary);
 
