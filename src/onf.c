@@ -123,21 +123,29 @@ struct onf_int_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_siz
   return counts;
 }
 
-void onf_count_kmers2(char* seq, size_t length, struct onf_int_array* counts6, struct onf_int_array* counts8,
-                      struct onf_int_array* counts9)
+struct onf_int_array** onf_count_kmers2(char* seq, size_t seq_len)
 {
   // Check args
   if (seq == NULL ||
-      length < 9) {
+      seq_len < 9) {
 
 //    return ONF_ERROR_PTR;
   }
+
+  struct onf_int_array* counts6 = onf_kmer_count_array_new(6);
+  if (counts6 == ONF_ERROR_PTR) { return ONF_ERROR_PTR; }
+
+  struct onf_int_array* counts8 = onf_kmer_count_array_new(8);
+  if (counts8 == ONF_ERROR_PTR) { return ONF_ERROR_PTR; }
+
+  struct onf_int_array* counts9 = onf_kmer_count_array_new(9);
+  if (counts9 == ONF_ERROR_PTR) { return ONF_ERROR_PTR; }
 
   size_t kmer_size = 9, i = 0;
 
   int hashed_kmer9 = 0, hashed_kmer8 = 0, hashed_kmer6 = 0;
 
-  struct onf_int_array* encoded_seq = onf_encode_seq(seq, length);
+  struct onf_int_array* encoded_seq = onf_encode_seq(seq, seq_len);
 
   struct onf_int_array* tmp_ary = onf_int_array_new(encoded_seq->length);
   tmp_ary->length = kmer_size;
@@ -198,4 +206,13 @@ void onf_count_kmers2(char* seq, size_t length, struct onf_int_array* counts6, s
       ++(counts6->array[hashed_kmer6]);
     }
   }
+
+  struct onf_int_array** arrays = malloc(3 * sizeof(struct onf_int_array*));
+  if (arrays == NULL) { return ONF_ERROR_PTR; }
+
+  arrays[0] = counts6;
+  arrays[1] = counts8;
+  arrays[2] = counts9;
+
+  return arrays;
 }

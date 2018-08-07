@@ -275,6 +275,9 @@ void test___onf_count_kmers___should_CountKmersUpTo15(void)
 
   TEST_ASSERT_EQUAL(total_possible_kmers, actual_counts->length);
   TEST_ASSERT_EQUAL_INT_ARRAY(expected_counts, actual_counts->array, total_possible_kmers);
+
+  onf_int_array_free(actual_counts);
+  free(expected_counts);
 }
 
 void test___onf_count_kmers___should_ReturnErrorOnBadInput(void)
@@ -300,25 +303,25 @@ void test___onf_count_kmers___should_ReturnErrorOnBadInput(void)
 
 //////////////////////
 
-void print_int_array(struct onf_int_array* ary)
-{
-  printf("ary (%zu):", ary->length);
-  for (size_t i = 0; i < ary->length; ++i) {
-//    printf(" %d", ary->array[i]);
-  }
-  putchar('\n');
-}
-
-void print_non_zero(struct onf_int_array* ary, char* msg)
-{
-  printf("%s:", msg);
-  for (size_t i = 0; i < ary->length; ++i) {
-    if (ary->array[i] != 0) {
-      printf(" %zu: %d,", i, ary->array[i]);
-    }
-  }
-  printf("\n");
-}
+//void print_int_array(struct onf_int_array* ary)
+//{
+//  printf("ary (%zu):", ary->length);
+//  for (size_t i = 0; i < ary->length; ++i) {
+////    printf(" %d", ary->array[i]);
+//  }
+//  putchar('\n');
+//}
+//
+//void print_non_zero(struct onf_int_array* ary, char* msg)
+//{
+//  printf("%s:", msg);
+//  for (size_t i = 0; i < ary->length; ++i) {
+//    if (ary->array[i] != 0) {
+//      printf(" %zu: %d,", i, ary->array[i]);
+//    }
+//  }
+//  printf("\n");
+//}
 
 void test___onf_count_kmers2___should_ReturnLowerOrderCountArray(void)
 {
@@ -334,14 +337,14 @@ void test___onf_count_kmers2___should_ReturnLowerOrderCountArray(void)
   assert(counts8->length == pow(4, 8));
   assert(counts9->length == pow(4, 9));
 
-  struct onf_int_array* actual_counts6 = onf_kmer_count_array_new(6);
-  struct onf_int_array* actual_counts8 = onf_kmer_count_array_new(8);
-  struct onf_int_array* actual_counts9 = onf_kmer_count_array_new(9);
-  assert(actual_counts6->length == pow(4, 6));
-  assert(actual_counts8->length == pow(4, 8));
-  assert(actual_counts9->length == pow(4, 9));
+  onf_count_kmers2(seq, seq_len);
 
-  onf_count_kmers2(seq, seq_len, actual_counts6, actual_counts8, actual_counts9);
+  // The actual function being tested.
+  struct onf_int_array** arrays = onf_count_kmers2(seq, seq_len);
+
+  struct onf_int_array* actual_counts9 = arrays[2];
+  struct onf_int_array* actual_counts8 = arrays[1];
+  struct onf_int_array* actual_counts6 = arrays[0];
 
   TEST_ASSERT_EQUAL(counts9->length, actual_counts9->length);
   TEST_ASSERT_EQUAL(counts8->length, actual_counts8->length);
@@ -351,4 +354,12 @@ void test___onf_count_kmers2___should_ReturnLowerOrderCountArray(void)
   TEST_ASSERT_EQUAL_INT_ARRAY(counts8->array, actual_counts8->array, counts8->length);
   TEST_ASSERT_EQUAL_INT_ARRAY(counts6->array, actual_counts6->array, counts6->length);
 
+  onf_int_array_free(counts6);
+  onf_int_array_free(counts8);
+  onf_int_array_free(counts9);
+
+  for (int i = 0; i < 2; ++i) {
+    onf_int_array_free(arrays[i]);
+  }
+  free(arrays);
 }
