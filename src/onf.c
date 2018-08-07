@@ -128,8 +128,7 @@ struct onf_int_array** onf_count_kmers2(char* seq, size_t seq_len)
   // Check args
   if (seq == NULL ||
       seq_len < 9) {
-
-//    return ONF_ERROR_PTR;
+    return ONF_ERROR_PTR;
   }
 
   struct onf_int_array* counts6 = onf_kmer_count_array_new(6);

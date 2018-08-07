@@ -363,3 +363,19 @@ void test___onf_count_kmers2___should_ReturnLowerOrderCountArray(void)
   }
   free(arrays);
 }
+
+void test___onf_count_kmers2___should_ReturnErrorIfSeqLenTooSmall(void)
+{
+  char* seq = "actg";
+  size_t seq_len = 4;
+
+  TEST_ASSERT_NULL(onf_count_kmers2(seq, seq_len));
+}
+
+void test___onf_count_kmers2___should_ReturnErrorIfSeqIsBad(void)
+{
+  char* seq = NULL;
+  size_t seq_len = 4;
+
+  TEST_ASSERT_NULL(onf_count_kmers2(seq, seq_len));
+}
