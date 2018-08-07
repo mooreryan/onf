@@ -13,12 +13,12 @@
  * @brief Encodes a nucleotide sequence as an integer array.
  *
  * @note Case insensitive.
- * @note I will encode any non-ACTG as 4.
+ * @note I will skip any non-AaCcTtGg char.
  *
  * @param seq The nucleotide sequence to encode.
  * @param len The length of the sequence (ignoring terminating null char).
  *
- * @retval encoded_seq e.g., { 0, 0, 1, 2, 3, 4 } for "AaCTGN"
+ * @retval encoded_seq e.g., { 0, 0, 1, 2, 3 } for "AaCTGN"
  * @retval ONF_ERROR_PTR if there are errors
  */
 struct onf_int_array* onf_encode_seq(char* seq, size_t len);
@@ -61,7 +61,6 @@ struct onf_int_array* onf_encode_seq(char* seq, size_t len);
  * kmer: [3, 3], hashed: 15
  *
  * @param encoded_seq For example, the output of onf_hash_encoded_seq()
- * @param len Length of the encoded seq.
  *
  * @note I will return an error value if the kmer you're trying to hash doesn't have 0 - 3 for every value.  I.e., if it has any chars other than 'AaCcTtGg'.
  *
@@ -80,11 +79,40 @@ int onf_hash_int_array(struct onf_int_array* ary);
  */
 struct onf_int_array* onf_kmer_count_array_new(size_t size);
 
+/**
+ * @brief Hash the lower order kmer given the hash value of the current order.
+ *
+ * If the kmer you hashed was { 0, 1, 2, 3 } and you set how_much_lower to 2, then I will hash { 0, 1 } without going through the whole hash calculation function.
+ *
+ * @note Doing it this way should be faster than calculating the whole hash for the head of the kmer seperately.
+ *
+ * @param hashed_kmer The hash value of a kmer.
+ * @param how_much_lower How many orders lower?
+ * @retval hashed kmer of a lower order
+ */
 int onf_hash_lower_order_kmer(int hashed_kmer, int how_much_lower);
 
+/**
+ * @brief Count the kmers in the given seq.
+ *
+ * @note that the count array I return is indexed by the hash val of the kmer.
+ *
+ * @param seq E.g., "actg"
+ * @param seq_len E.g., 4
+ * @param kmer_size Size of the kmer to count
+ * @retval an integer array with counts for all possible kmers of kmer_size size
+ */
 struct onf_int_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_size);
 
-// Like onf_count_kmers() but gives counts for kmer 9, 8, and 6.
+/**
+ * @brief Like onf_count_kmers() but this one counts kmer_size 9, 8, and 6 at the same time.
+ *
+ * This is for the big_simon program.
+ *
+ * @param seq
+ * @param seq_len
+ * @retval An array of struct onf_int_array pointers containing { counts6, counts8, counts9 }
+ */
 struct onf_int_array** onf_count_kmers2(char* seq, size_t seq_len);
 
 #endif // _ONF_H
