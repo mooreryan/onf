@@ -69,7 +69,7 @@ struct onf_int_array* onf_encode_seq(char* seq, size_t len);
  * @retval ONF_ERROR_INT if there are errors
  * @retval ONF_ERROR_INT if the encoded seq has non 0, 1, 2, 3 values (i.e. non A C T G )
  */
-int onf_hash_encoded_seq(struct onf_int_array* encoded_seq, size_t len);
+int onf_hash_int_array(struct onf_int_array* ary);
 
 /**
  * @brief Returns an int array for counts of the correct size for counting kmers.
@@ -78,10 +78,10 @@ int onf_hash_encoded_seq(struct onf_int_array* encoded_seq, size_t len);
  * @retval Array of size 2^size filled with zeros.
  * @retval ONF_ERROR_PTR if there were errors or there was a bad size.
  */
-//struct onf_int_array* onf_kmer_count_array_new(size_t size);
-//
-//int onf_hash_lower_order_kmer(int hashed_kmer, int how_much_lower);
-//
-//struct onf_int_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_size);
+struct onf_int_array* onf_kmer_count_array_new(size_t size);
+
+int onf_hash_lower_order_kmer(int hashed_kmer, int how_much_lower);
+
+struct onf_int_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_size);
 
 #endif // _ONF_H
