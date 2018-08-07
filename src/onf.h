@@ -84,4 +84,7 @@ int onf_hash_lower_order_kmer(int hashed_kmer, int how_much_lower);
 
 struct onf_int_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_size);
 
+// Like onf_count_kmers() but gives counts for kmer 9, 8, and 6.
+void onf_count_kmers2(char* seq, size_t length, struct onf_int_array* counts6, struct onf_int_array* counts8, struct onf_int_array* counts9);
+
 #endif // _ONF_H

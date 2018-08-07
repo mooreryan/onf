@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <stdio.h> // For debug
+
 #include "const.h"
 #include "onf.h"
 
@@ -17,7 +19,7 @@ struct onf_int_array* onf_encode_seq(char* seq, size_t len)
   if (onf_int_array_bad(encoded_seq)) { return ONF_ERROR_PTR; }
 
   size_t bad_chars = 0;
-  size_t new_i = 0;
+  size_t new_i     = 0;
 
   for (size_t i = 0; i < len; ++i) {
     switch (seq[i]) {
@@ -76,7 +78,7 @@ struct onf_int_array* onf_kmer_count_array_new(size_t size)
 {
   if (size < 1) { return ONF_ERROR_PTR; }
 
-  struct onf_int_array* counts = onf_int_array_new((size_t)pow(4, size));
+  struct onf_int_array* counts = onf_int_array_new((size_t) pow(4, size));
 
   if (counts == NULL) { return ONF_ERROR_PTR; }
 
@@ -119,4 +121,81 @@ struct onf_int_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer_siz
   }
 
   return counts;
+}
+
+void onf_count_kmers2(char* seq, size_t length, struct onf_int_array* counts6, struct onf_int_array* counts8,
+                      struct onf_int_array* counts9)
+{
+  // Check args
+  if (seq == NULL ||
+      length < 9) {
+
+//    return ONF_ERROR_PTR;
+  }
+
+  size_t kmer_size = 9, i = 0;
+
+  int hashed_kmer9 = 0, hashed_kmer8 = 0, hashed_kmer6 = 0;
+
+  struct onf_int_array* encoded_seq = onf_encode_seq(seq, length);
+
+  struct onf_int_array* tmp_ary = onf_int_array_new(encoded_seq->length);
+  tmp_ary->length = kmer_size;
+
+
+  int num_9mers = encoded_seq->length - kmer_size + 1;
+
+  for (i = 0; i < num_9mers; ++i) {
+
+
+    tmp_ary->array = &encoded_seq->array[i];
+
+    hashed_kmer9 = onf_hash_int_array(tmp_ary);
+
+    hashed_kmer8 = onf_hash_lower_order_kmer(hashed_kmer9, 1);
+    hashed_kmer6 = onf_hash_lower_order_kmer(hashed_kmer9, 3);
+
+    if (hashed_kmer9 != ONF_ERROR_INT) {
+      ++(counts9->array[hashed_kmer9]);
+    }
+
+    if (hashed_kmer8 != ONF_ERROR_INT) {
+      ++(counts8->array[hashed_kmer8]);
+    }
+
+    if (hashed_kmer6 != ONF_ERROR_INT) {
+      ++(counts6->array[hashed_kmer6]);
+    }
+  }
+
+  // need to catch the last couple of kmers
+  kmer_size = 8;
+  tmp_ary->array  = &encoded_seq->array[i++]; // for the last 8mer
+  tmp_ary->length = kmer_size;
+
+  // Get the 8mer at this pos.
+  hashed_kmer8 = onf_hash_int_array(tmp_ary);
+  if (hashed_kmer8 != ONF_ERROR_INT) {
+    ++(counts8->array[hashed_kmer8]);
+  }
+
+  // Get the 6mer at this pos.
+  hashed_kmer6 = onf_hash_lower_order_kmer(hashed_kmer8, 2);
+  if (hashed_kmer6 != ONF_ERROR_INT) {
+    ++(counts6->array[hashed_kmer6]);
+  }
+
+  // Kmer size 6 to finish it off.
+  kmer_size = 6;
+  tmp_ary->length = kmer_size;
+
+  int num_6mers = encoded_seq->length - kmer_size + 1;
+
+  for (size_t z = i; z < num_6mers; ++z) {
+    tmp_ary->array = &encoded_seq->array[z];
+    hashed_kmer6 = onf_hash_int_array(tmp_ary);
+    if (hashed_kmer6 != ONF_ERROR_INT) {
+      ++(counts6->array[hashed_kmer6]);
+    }
+  }
 }

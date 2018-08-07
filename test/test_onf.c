@@ -3,6 +3,8 @@
 #include "onf.h"
 
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
 void setUp(void)
 {
@@ -32,7 +34,7 @@ void test___onf_encode_seq___should_NotEncodeWeirdChars(void)
 {
   char* seq = "@% a_c-?";
   size_t len           = 8;
-  int    encoded_seq[] = { 0, 1 };
+  int    encoded_seq[] = {0, 1};
 
   struct onf_int_array* actual = onf_encode_seq(seq, len);
 
@@ -123,6 +125,33 @@ void test___onf_hash_int_array___should_HashProperly(void)
   free(ary);
 }
 
+void test___onf_hash_int_array___should_HashBigThingsFine(void)
+{
+  // These values are calculated with sandbox/hash_nuc.rb
+
+  // actNgaNctNgaNctg
+  int length = 12;
+  int ints[] = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  struct onf_int_array* ary = onf_int_array_new(12);
+  ary->array = (int*) &ints;
+
+  int hashed = onf_hash_int_array(ary);
+  TEST_ASSERT_EQUAL(1776411, hashed);
+}
+
+void test___onf_hash_int_array___should_BigHashTest1(void)
+{
+  // I use signed ints, so I can handle kmers up to k length 15 without overflowing.
+// ggggggggggggggg
+  int length = 15;
+  int ints[] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
+  struct onf_int_array* ary = onf_int_array_new(15);
+  ary->array = (int*) &ints;
+
+  int hashed = onf_hash_int_array(ary);
+  TEST_ASSERT_EQUAL(1073741823, hashed);
+}
+
 //////////////////////
 
 void test___onf_kmer_count_array_new___should_ReturnNewKmerCountArray(void)
@@ -204,7 +233,6 @@ void test___onf_hash_lower_order_kmer___HandlesAnyLowerOrder(void)
 
 void test___onf_count_kmers___should_ReturnKmerCountsForSequence(void)
 {
-  // Only the non-4 kmers count!!!
   // kmers: ac, ct, tg, ga, ac
   // encoded kmers are {0, 1}, {1, 2}, {2, 3}, {3, 0}, {0, 1}
   char* seq = "actNgac"; // {0, 1, 2, 3, 0, 1 }
@@ -224,6 +252,29 @@ void test___onf_count_kmers___should_ReturnKmerCountsForSequence(void)
   TEST_ASSERT_EQUAL_INT_ARRAY(counts, actual->array, 16);
 
   free(actual);
+}
+
+void test___onf_count_kmers___should_CountKmersUpTo15(void)
+{
+  // We should be able to count kmers up to 15 in length, but doing the assertion on that large of an array (like 4gb worth) is slow.
+  size_t ksize = 9; // 9 is the biggest kmer we hash for big_simon app
+  char* seq = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaC"; // it should be 30 long
+  size_t seq_len = strlen(seq);
+  assert(seq_len == 30);
+
+  int num_kmers_in_seq     = seq_len - ksize + 1;
+  int total_possible_kmers = pow(4, ksize);
+
+  struct onf_int_array* actual_counts = onf_count_kmers(seq, seq_len, ksize);
+
+  int* expected_counts = calloc(total_possible_kmers, sizeof(int));
+  // they are all the same kmer "a" * ksize except the last one
+  expected_counts[0] = num_kmers_in_seq - 1;
+  // this one is ("a" * ksize-1) + "c", which will hash to 1.
+  expected_counts[1] = 1;
+
+  TEST_ASSERT_EQUAL(total_possible_kmers, actual_counts->length);
+  TEST_ASSERT_EQUAL_INT_ARRAY(expected_counts, actual_counts->array, total_possible_kmers);
 }
 
 void test___onf_count_kmers___should_ReturnErrorOnBadInput(void)
@@ -248,8 +299,56 @@ void test___onf_count_kmers___should_ReturnErrorOnBadInput(void)
 }
 
 //////////////////////
-//
-//void test___onf_lower_order_counts___should_ReturnLowerOrderCountArray(void)
-//{
-//
-//}
+
+void print_int_array(struct onf_int_array* ary)
+{
+  printf("ary (%zu):", ary->length);
+  for (size_t i = 0; i < ary->length; ++i) {
+//    printf(" %d", ary->array[i]);
+  }
+  putchar('\n');
+}
+
+void print_non_zero(struct onf_int_array* ary, char* msg)
+{
+  printf("%s:", msg);
+  for (size_t i = 0; i < ary->length; ++i) {
+    if (ary->array[i] != 0) {
+      printf(" %zu: %d,", i, ary->array[i]);
+    }
+  }
+  printf("\n");
+}
+
+void test___onf_count_kmers2___should_ReturnLowerOrderCountArray(void)
+{
+//char* seq = "tccccccccg";
+  char* seq = "actgACTGactgACTG";
+
+  size_t seq_len = strlen(seq);
+
+  struct onf_int_array* counts6 = onf_count_kmers(seq, seq_len, 6);
+  struct onf_int_array* counts8 = onf_count_kmers(seq, seq_len, 8);
+  struct onf_int_array* counts9 = onf_count_kmers(seq, seq_len, 9);
+  assert(counts6->length == pow(4, 6));
+  assert(counts8->length == pow(4, 8));
+  assert(counts9->length == pow(4, 9));
+
+  struct onf_int_array* actual_counts6 = onf_kmer_count_array_new(6);
+  struct onf_int_array* actual_counts8 = onf_kmer_count_array_new(8);
+  struct onf_int_array* actual_counts9 = onf_kmer_count_array_new(9);
+  assert(actual_counts6->length == pow(4, 6));
+  assert(actual_counts8->length == pow(4, 8));
+  assert(actual_counts9->length == pow(4, 9));
+
+  onf_count_kmers2(seq, seq_len, actual_counts6, actual_counts8, actual_counts9);
+
+  TEST_ASSERT_EQUAL(counts9->length, actual_counts9->length);
+  TEST_ASSERT_EQUAL(counts8->length, actual_counts8->length);
+  TEST_ASSERT_EQUAL(counts6->length, actual_counts6->length);
+
+  TEST_ASSERT_EQUAL_INT_ARRAY(counts9->array, actual_counts9->array, counts9->length);
+  TEST_ASSERT_EQUAL_INT_ARRAY(counts8->array, actual_counts8->array, counts8->length);
+  TEST_ASSERT_EQUAL_INT_ARRAY(counts6->array, actual_counts6->array, counts6->length);
+
+}
