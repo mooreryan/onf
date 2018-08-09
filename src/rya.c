@@ -5,7 +5,7 @@
 
 rya_bool rya_file_exist(const char* fname)
 {
-  if (fname == NULL) { return RYA_ERROR_INT; }
+  if (fname == NULL) { return rya_error; }
 
   struct stat st;
 

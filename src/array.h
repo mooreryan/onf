@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "const.h"
+#include "rya.h"
 
 #define ONF_ARRAY_DECLARATIONS(type)                                    \
   struct onf_##type##_array                                             \
@@ -56,6 +57,6 @@
     }                                                                   \
   }                                                                     \
 
-ONF_ARRAY_DECLARATIONS(int32_t)
+ONF_ARRAY_DECLARATIONS(rya_int)
 
 #endif // _ARRAY_H

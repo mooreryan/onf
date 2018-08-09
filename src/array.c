@@ -4,4 +4,4 @@
 
 #include "array.h"
 
-ONF_ARRAY_FUNCTIONS(int32_t)
+ONF_ARRAY_FUNCTIONS(rya_int)

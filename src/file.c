@@ -28,7 +28,7 @@ void add_fname_to_ary(cf_file_t* file, void* ary)
  */
 tommy_array* onf_file_files_in_dir(const char* path)
 {
-  if (path == NULL || !rya_file_exist(path)) { return ONF_ERROR_PTR; }
+  if (path == NULL || rya_file_exist(path) != rya_true) { return ONF_ERROR_PTR; }
 
   tommy_array* ary = malloc(sizeof(tommy_array));
   if (ary == NULL) { return ONF_ERROR_PTR; }
