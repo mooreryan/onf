@@ -6,7 +6,17 @@
 
 #include <assert.h>
 
-void add_fname_to_ary(cf_file_t* file, void* ary)
+/**
+ * @brief Callback for cf_traverse()
+ *
+ * I add filenames to the tommy array.
+ *
+ * @warning File names are malloc'd in this function, so you'll need to free them later.
+ *
+ * @param file
+ * @param ary
+ */
+static void add_fname_to_ary(cf_file_t* file, void* ary)
 {
   assert(ary);
   if (file->is_reg) {

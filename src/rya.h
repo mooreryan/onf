@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author Ryan Moore
+ * @brief I contain functions for the Rya library.
+ */
+
 #ifndef _RYA_H
 #define _RYA_H
 
@@ -16,6 +22,16 @@ enum rya_bool_enum { rya_false = 0, rya_true = 1, rya_error = RYA_ERROR_INT };
 typedef enum rya_bool_enum rya_bool;
 typedef int32_t rya_int;
 
+/**
+ * @brief I tell whether a file exists or not.
+ *
+ * Basically I'm a wrapper to stat().
+ *
+ * @param fname
+ * @retval rya_error if fname is NULL
+ * @retval rya_false if the file does NOT exist
+ * @retval rya_true if the file exists
+ */
 rya_bool rya_file_exist(const char* fname);
 
 #endif // _RYA_H

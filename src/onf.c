@@ -4,12 +4,65 @@
 
 #include <stdio.h> // For debug
 
+#include <zlib.h> // For gzFile
+
+#include "rya.h"
 #include "const.h"
 #include "onf.h"
+#include "kseq_helper.h"
+#include "tommyarray.h"
 
 ONF_ARRAY_FUNCTIONS(rya_int)
 
 /* See onf.h for documentation. */
+
+void seq_rec_free(seq_rec* rec)
+{
+  if (rec != NULL) {
+    free(rec->id);
+    free(rec->seq);
+    free(rec);
+  }
+}
+
+tommy_array* onf_read_seqs(const char* fname)
+{
+  if (fname == NULL) { return ONF_ERROR_PTR; }
+
+  if (rya_file_exist(fname) != rya_true) {
+    return ONF_ERROR_PTR;
+  }
+
+  tommy_array* seqs = malloc(sizeof(tommy_array));
+  if (seqs == NULL) { return ONF_ERROR_PTR; }
+  tommy_array_init(seqs);
+
+  // START HERE add kseq.h and read seqs.
+  gzFile fp;
+  kseq_t* seq;
+  long l = 0;
+
+  fp = gzopen(fname, "r");
+  if (fp == Z_NULL) { return ONF_ERROR_PTR; }
+
+  seq = kseq_init(fp);
+  seq_rec* rec = NULL;
+
+  while ((l = kseq_read(seq)) >= 0) {
+    rec = malloc(sizeof(seq_rec));
+    if (rec == NULL) { return ONF_ERROR_PTR; }
+
+    rec->id        = strdup(seq->name.s);
+    rec->id_length = seq->name.l;
+
+    rec->seq        = strdup(seq->seq.s);
+    rec->seq_length = seq->seq.l;
+
+    tommy_array_insert(seqs, rec);
+  }
+
+  return seqs;
+}
 
 struct onf_rya_int_array* onf_encode_seq(char* seq, size_t len)
 {
@@ -56,12 +109,12 @@ struct onf_rya_int_array* onf_encode_seq(char* seq, size_t len)
   return encoded_seq;
 }
 
-rya_int  onf_hash_rya_int_array(struct onf_rya_int_array* ary)
+rya_int onf_hash_rya_int_array(struct onf_rya_int_array* ary)
 {
   if (onf_rya_int_array_bad(ary) || ary->length > 15) { return ONF_ERROR_INT32_T; }
 
-  rya_int  hashed_val = 0;
-  rya_int  val        = 0;
+  rya_int hashed_val = 0;
+  rya_int val        = 0;
 
   for (size_t i = 0; i < ary->length; ++i) {
     val = ary->array[i];
@@ -79,14 +132,14 @@ struct onf_rya_int_array* onf_kmer_count_array_new(size_t size)
 {
   if (size < 1) { return ONF_ERROR_PTR; }
 
-  struct onf_rya_int_array* counts = onf_rya_int_array_new((size_t) pow(4, size));
+  struct onf_rya_int_array* counts = onf_rya_int_array_new((size_t)pow(4, size));
 
   if (counts == NULL) { return ONF_ERROR_PTR; }
 
   return counts;
 }
 
-rya_int  onf_hash_lower_order_kmer(rya_int hashed_kmer, rya_int how_much_lower)
+rya_int onf_hash_lower_order_kmer(rya_int hashed_kmer, rya_int how_much_lower)
 {
   // hashed_kmer / pow(2, 2 * how_much_lower)
   return hashed_kmer >> (2 * how_much_lower);

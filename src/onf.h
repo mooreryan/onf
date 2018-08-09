@@ -9,7 +9,33 @@
 
 #include <stdint.h>
 
+#include "tommyarray.h"
 #include "array.h"
+#include "rya.h"
+
+/**
+ * @brief Light wrapper for fasta records.
+ *
+ * @note The `id` field is for everything up to the first space in the header.
+ */
+typedef struct sequence_record_t {
+  rya_int id_length;
+  rya_int seq_length;
+
+  char* id;
+  char* seq;
+} seq_rec;
+
+void seq_rec_free(seq_rec* rec);
+
+/**
+ * @brief I read sequences from a fasta file and put them into an array.
+ * @note I can handle gzipped files with zlib
+ * @param fname
+ * @retval ONF_ERROR_PTR if there are errors or fname is null
+ * @retval array of sequences (seq_rec*)
+ */
+tommy_array* onf_read_seqs(const char* fname);
 
 /**
  * @brief Encodes a nucleotide sequence as an integer array.

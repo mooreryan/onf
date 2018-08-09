@@ -1,11 +1,16 @@
 #include "unity.h"
 #include "const.h"
 #include "onf.h"
+#include "tommyarray.h"
+#include "rlib.h"
+#include "rya.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <stdint.h>
+#include <zlib.h> // For gzFile
+
 
 void setUp(void)
 {
@@ -15,6 +20,58 @@ void tearDown(void)
 {
 }
 
+////////////////////
+
+void test___onf_read_seqs___should_ReturnTheSeqs(void)
+{
+  char* this_fname = __FILE__;
+
+  rstring* this_file = rstring_new(this_fname);
+  assert(this_file);
+
+  rstring* dirname = rfile_dirname(this_file);
+  assert(dirname);
+
+  rstring* path = rstring_format("%s/test_files/seqs/s1.fa", rstring_data(dirname));
+  assert(path);
+
+  tommy_array* seqs = onf_read_seqs(rstring_data(path));
+
+  int num_seqs = 2;
+  int seq_len = 8;
+  int id_len = 2;
+
+  seq_rec* rec = NULL;
+
+  TEST_ASSERT_EQUAL(num_seqs, tommy_array_size(seqs));
+
+  rec = tommy_array_get(seqs, 0);
+  TEST_ASSERT_EQUAL(seq_len, rec->seq_length);
+  TEST_ASSERT_EQUAL(id_len, rec->id_length);
+  TEST_ASSERT_EQUAL_STRING("s1", rec->id);
+  TEST_ASSERT_EQUAL_STRING("ACTGactg", rec->seq);
+  seq_rec_free(rec);
+
+  rec = tommy_array_get(seqs, 1);
+  TEST_ASSERT_EQUAL(seq_len, rec->seq_length);
+  TEST_ASSERT_EQUAL(id_len, rec->id_length);
+  TEST_ASSERT_EQUAL_STRING("s2", rec->id);
+  TEST_ASSERT_EQUAL_STRING("actgACTG", rec->seq);
+  seq_rec_free(rec);
+
+  tommy_array_done(seqs);
+  free(seqs);
+}
+
+void test___onf_read_seqs___return_ErrorBadFname(void)
+{
+  TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, onf_read_seqs(NULL));
+}
+
+void test___onf_read_seqs___return_ErrorOnFileNotExist(void)
+{
+  TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, onf_read_seqs("arsotienarsoteinarsotn"));
+}
 ////////////////////
 
 void test___onf_encode_seq___should_EncodeTheSequence(void)
