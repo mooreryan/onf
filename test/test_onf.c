@@ -81,11 +81,11 @@ void test___onf_hash_int32_t_array___should_ReturnAnErrorCodeIfHasBadInts(void)
 
   ary->array[0] = 4;
   actual = onf_hash_int32_t_array(ary);
-  TEST_ASSERT_EQUAL_INT(ONF_ERROR_INT, actual);
+  TEST_ASSERT_EQUAL_INT(ONF_ERROR_INT32_T, actual);
 
   ary->array[0] = -1;
   actual = onf_hash_int32_t_array(ary);
-  TEST_ASSERT_EQUAL_INT(ONF_ERROR_INT, actual);
+  TEST_ASSERT_EQUAL_INT(ONF_ERROR_INT32_T, actual);
 }
 
 
@@ -96,7 +96,7 @@ void test___onf_hash_int32_t_array___should_HandleBadInput(void)
 
   int32_t actual = onf_hash_int32_t_array(ary);
 
-  TEST_ASSERT_EQUAL_INT(ONF_ERROR_INT, actual);
+  TEST_ASSERT_EQUAL_INT(ONF_ERROR_INT32_T, actual);
 }
 
 void test___onf_hash_int32_t_array___should_HashProperly(void)
@@ -163,7 +163,7 @@ void test___onf_hash_int32_t_array___should_ReturnErrorOnOverflow(void)
 
   int32_t hashed = onf_hash_int32_t_array(ary);
 
-  TEST_ASSERT_EQUAL(ONF_ERROR_INT, hashed);
+  TEST_ASSERT_EQUAL(ONF_ERROR_INT32_T, hashed);
 }
 
 

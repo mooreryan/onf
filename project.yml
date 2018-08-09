@@ -31,6 +31,8 @@
     - -:test/support
   :source:
     - src/**
+    - vendor/tommyds/**
+    - vendor/ruby_like_c/**
   :support:
     - test/support
 

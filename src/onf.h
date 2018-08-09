@@ -114,6 +114,8 @@ struct onf_int32_t_array* onf_count_kmers(char* seq, size_t seq_len, size_t kmer
  *
  * This is for the big_simon program.
  *
+ * @note You should call this on all hosts.  For viruses, you only need to call onf_count_kmers() with kmer_size of 6.
+ *
  * @param seq
  * @param seq_len
  * @retval An array of struct onf_int32_t_array pointers containing { counts6, counts8, counts9 }
