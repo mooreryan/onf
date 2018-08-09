@@ -2,6 +2,8 @@
 #include "file.h"
 #include "tommyarray.h"
 #include "rlib.h"
+#include "const.h"
+#include "rya.h"
 
 #include <assert.h>
 
@@ -13,7 +15,7 @@ void tearDown(void)
 {
 }
 
-void test___onf_file_files_in_dir___should_DoSomething(void)
+void test___onf_file_files_in_dir___should_GiveNamesOfTheFiles(void)
 {
   tommy_array* expected_ary = malloc(sizeof(tommy_array));
   tommy_array_init(expected_ary);
@@ -67,4 +69,15 @@ void test___onf_file_files_in_dir___should_DoSomething(void)
   rstring_free(path);
   tommy_array_done(expected_ary);
   free(expected_ary);
+}
+
+void test___onf_file_files_in_dir___should_ReturnErrorOnErrors(void)
+{
+  char* path = NULL;
+
+  TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, onf_file_files_in_dir(path));
+
+  path = "arstoienarstoienarsotien"; // this doesn't exist.
+
+  TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, onf_file_files_in_dir(path));
 }
