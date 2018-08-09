@@ -73,6 +73,7 @@
 :tools_test_linker:
   :arguments:
     - -lz
+    - -lm
 
 # LIBRARIES
 # These libraries are automatically injected into the build process. Those specified as

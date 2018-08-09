@@ -6,6 +6,8 @@
 
 #include <zlib.h> // For gzFile
 
+#include <math.h> // For pow
+
 #include "rya.h"
 #include "const.h"
 #include "onf.h"
@@ -63,6 +65,72 @@ tommy_array* onf_read_seqs(const char* fname)
 
   return seqs;
 }
+
+struct onf_rya_int_array** onf_count_seq_kmers2(tommy_array* seqs)
+{
+  int num_sizes = 3;
+  int sizes[]   = {6, 8, 9};
+  struct onf_rya_int_array** individual_counts = NULL;
+
+  seq_rec* rec = NULL;
+
+  int num_seqs = tommy_array_size(seqs);
+
+  if (seqs == NULL) {
+    fprintf(stderr, "ERROR -- seqs == NULL\n");
+    return ONF_ERROR_PTR;
+  }
+
+  // This will hold the counts for all the sizes.
+  struct onf_rya_int_array** counts = malloc(num_sizes * sizeof(struct onf_rya_int_array*));
+
+  if (counts == NULL) {
+    fprintf(stderr, "ERROR -- counts == NULL\n");
+    return ONF_ERROR_PTR;
+  }
+
+  // Make counts containers to hold the final counts.
+  for (int i = 0; i < num_sizes; ++i) {
+    counts[i] = onf_kmer_count_array_new(sizes[i]);
+    if (counts[i] == ONF_ERROR_PTR) {
+      fprintf(stderr,
+              "ERROR -- Error getting counts for %d\n", i);
+      return ONF_ERROR_PTR;
+    }
+  }
+
+  for (int seq_i = 0; seq_i < num_seqs; ++seq_i) {
+
+    rec = tommy_array_get(seqs, seq_i);
+    if (rec == NULL) {
+      fprintf(stderr, "ERROR -- couldn't get seq %d\n", seq_i);
+
+      return ONF_ERROR_PTR;
+    }
+
+    // Get the counts for this seq.
+    individual_counts = onf_count_kmers2(rec->seq, rec->seq_length);
+    if (individual_counts == ONF_ERROR_PTR) {
+      fprintf(stderr, "ERROR -- error counting kmers for seq %d\n", seq_i);
+      fprintf(stderr, "seq: %s, len: %d\n", rec->seq, rec->seq_length);
+
+      return ONF_ERROR_PTR;
+    }
+
+    // Loop through counts for each kmer size.
+    for (int size_i = 0; size_i < num_sizes; ++size_i) {
+      assert(counts[size_i]->length == individual_counts[size_i]->length);
+
+      // Add the counts to the main counts file.
+      for (size_t z = 0; z < counts[size_i]->length; ++z) {
+        counts[size_i]->array[z] += individual_counts[size_i]->array[z];
+      }
+    }
+  }
+
+  return counts;
+}
+
 
 struct onf_rya_int_array* onf_encode_seq(char* seq, size_t len)
 {

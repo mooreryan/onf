@@ -18,7 +18,8 @@
  *
  * @note The `id` field is for everything up to the first space in the header.
  */
-typedef struct sequence_record_t {
+typedef struct sequence_record_t
+{
   rya_int id_length;
   rya_int seq_length;
 
@@ -36,6 +37,17 @@ void seq_rec_free(seq_rec* rec);
  * @retval array of sequences (seq_rec*)
  */
 tommy_array* onf_read_seqs(const char* fname);
+
+/**
+ * @brief Count kmers in an array of seqs.
+ * @note I assume that all sequences in the array are from the same genome.
+ *
+ * @param seqs Array of seq_rec*
+ *
+ * @retval ONF_ERROR_PTR on errors
+ * @retval an array of rya_int_arrays for the kmer counts of 6, 8, and 9.
+ */
+struct onf_rya_int_array** onf_count_seq_kmers2(tommy_array* seqs);
 
 /**
  * @brief Encodes a nucleotide sequence as an integer array.

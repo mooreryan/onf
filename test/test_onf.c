@@ -11,6 +11,9 @@
 #include <stdint.h>
 #include <zlib.h> // For gzFile
 
+#include <math.h> // For pow
+
+
 
 void setUp(void)
 {
@@ -72,6 +75,64 @@ void test___onf_read_seqs___return_ErrorOnFileNotExist(void)
 {
   TEST_ASSERT_EQUAL_PTR(ONF_ERROR_PTR, onf_read_seqs("arsotienarsoteinarsotn"));
 }
+
+////////////////////
+
+void test___onf_count_seq_kmers2(void) {
+  rstring* this_file = rstring_new(__FILE__);
+  assert(this_file);
+
+  rstring* dirname = rfile_dirname(this_file);
+  assert(dirname);
+
+  rstring* path = rstring_format("%s/test_files/seqs/s2.fa", rstring_data(dirname));
+  assert(path);
+
+  tommy_array* seqs = onf_read_seqs(rstring_data(path));
+  assert(seqs);
+
+  struct onf_rya_int_array** counts = onf_count_seq_kmers2(seqs);
+  assert(counts);
+
+  struct onf_rya_int_array* counts6 = counts[0];
+  assert(counts6);
+
+  struct onf_rya_int_array* counts8 = counts[1];
+  assert(counts8);
+
+  struct onf_rya_int_array* counts9 = counts[2];
+  assert(counts9);
+
+  // The seqs are both "a" * 9.  And there are two of them.
+  for (size_t i = 0; i < counts9->length; ++i) {
+    if (i == 0) {
+      TEST_ASSERT_EQUAL(1 * 2, counts9->array[0]);
+      TEST_ASSERT_EQUAL(2 * 2, counts8->array[0]);
+      TEST_ASSERT_EQUAL(4 * 2, counts6->array[0]);
+    }
+    else {
+      TEST_ASSERT_EQUAL(0, counts9->array[i]);
+
+      if (i < counts6->length) {
+        TEST_ASSERT_EQUAL(0, counts6->array[i]);
+      }
+
+      if (i < counts8->length) {
+        TEST_ASSERT_EQUAL(0, counts8->array[i]);
+      }
+    }
+  }
+
+  onf_rya_int_array_free(counts6);
+  onf_rya_int_array_free(counts8);
+  onf_rya_int_array_free(counts9);
+  free(counts);
+
+  rstring_free(this_file);
+  rstring_free(dirname);
+  rstring_free(path);
+}
+
 ////////////////////
 
 void test___onf_encode_seq___should_EncodeTheSequence(void)
