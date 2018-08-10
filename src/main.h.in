@@ -1,0 +1,11 @@
+//
+// Created by Ryan Moore on 8/10/18.
+//
+
+#ifndef ONF_MAIN_H
+#define ONF_MAIN_H
+
+#cmakedefine OPENMP
+#define ONF_VERSION "@ONF_VERSION@"
+
+#endif //ONF_MAIN_H

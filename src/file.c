@@ -13,6 +13,8 @@
  *
  * @warning File names are malloc'd in this function, so you'll need to free them later.
  *
+ * @todo Probably want to use something other than cute files' max lengths.
+ *
  * @param file
  * @param ary
  */
@@ -20,7 +22,8 @@ static void add_fname_to_ary(cf_file_t* file, void* ary)
 {
   assert(ary);
   if (file->is_reg) {
-    char* fname = strdup(file->name);
+
+    char* fname = strdup(file->path);
     if (fname != NULL) {
       tommy_array_insert((tommy_array*)ary, fname);
     }

@@ -1,9 +1,9 @@
 #include "unity.h"
 #include "file.h"
 #include "tommyarray.h"
-#include "rlib.h"
 #include "const.h"
 #include "rya.h"
+#include "rlib.h"
 
 #include <assert.h>
 
@@ -17,26 +17,6 @@ void tearDown(void)
 
 void test___onf_file_files_in_dir___should_GiveNamesOfTheFiles(void)
 {
-  tommy_array* expected_ary = malloc(sizeof(tommy_array));
-  tommy_array_init(expected_ary);
-
-  char* fname = NULL;
-
-  fname = strdup("good.fa");
-  assert(fname);
-  tommy_array_insert(expected_ary, fname);
-
-  fname = strdup("is.txt");
-  assert(fname);
-  tommy_array_insert(expected_ary, fname);
-
-  fname = strdup("amelia.fa");
-  assert(fname);
-  tommy_array_insert(expected_ary, fname);
-
-  fname = strdup("ryan.txt");
-  assert(fname);
-  tommy_array_insert(expected_ary, fname);
 
   char* this_fname = __FILE__;
 
@@ -49,6 +29,28 @@ void test___onf_file_files_in_dir___should_GiveNamesOfTheFiles(void)
   rstring* path = rstring_format("%s/test_files/apple", rstring_data(dirname));
   assert(path);
 
+  tommy_array* expected_ary = malloc(sizeof(tommy_array));
+  tommy_array_init(expected_ary);
+
+  rstring* fname = NULL;
+
+  fname = rstring_format("%s/good.fa", rstring_data(path));
+  assert(fname);
+  tommy_array_insert(expected_ary, fname);
+
+  fname = rstring_format("%s/is.txt", rstring_data(path));
+  assert(fname);
+  tommy_array_insert(expected_ary, fname);
+
+  fname = rstring_format("%s/pie/amelia.fa", rstring_data(path));
+  assert(fname);
+  tommy_array_insert(expected_ary, fname);
+
+  fname = rstring_format("%s/pie/ryan.txt", rstring_data(path));
+  assert(fname);
+  tommy_array_insert(expected_ary, fname);
+
+
 
   tommy_array* actual = onf_file_files_in_dir(rstring_data(path));
   assert(actual);
@@ -56,7 +58,7 @@ void test___onf_file_files_in_dir___should_GiveNamesOfTheFiles(void)
   TEST_ASSERT_EQUAL(4, tommy_array_size(actual));
 
   for (int i = 0; i < 4; ++i) {
-    TEST_ASSERT_EQUAL_STRING(tommy_array_get(expected_ary, i),
+    TEST_ASSERT_EQUAL_STRING(rstring_data(tommy_array_get(expected_ary, i)),
                              tommy_array_get(actual, i));
   }
 

@@ -10,5 +10,12 @@ latex
 
 # Sandbox for testing ideas
 sandbox
+old_makefiles
 
+
+# Development build folder
+cmake-build-debug
 test.dat
+
+# Has a bunch of genomes
+test/test_files/main

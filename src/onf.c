@@ -14,7 +14,7 @@
 #include "kseq_helper.h"
 #include "tommyarray.h"
 
-ONF_ARRAY_FUNCTIONS(rya_int)
+//ONF_ARRAY_FUNCTIONS(rya_int)
 
 /* See onf.h for documentation. */
 
