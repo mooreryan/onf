@@ -14,7 +14,6 @@
 #include <math.h> // For pow
 
 
-
 void setUp(void)
 {
 }
@@ -41,8 +40,8 @@ void test___onf_read_seqs___should_ReturnTheSeqs(void)
   tommy_array* seqs = onf_read_seqs(rstring_data(path));
 
   int num_seqs = 2;
-  int seq_len = 8;
-  int id_len = 2;
+  int seq_len  = 8;
+  int id_len   = 2;
 
   seq_rec* rec = NULL;
 
@@ -78,7 +77,8 @@ void test___onf_read_seqs___return_ErrorOnFileNotExist(void)
 
 ////////////////////
 
-void test___onf_count_seq_kmers2(void) {
+void test___onf_count_seq_kmers2(void)
+{
   rstring* this_file = rstring_new(__FILE__);
   assert(this_file);
 
@@ -135,11 +135,49 @@ void test___onf_count_seq_kmers2(void) {
 
 ////////////////////
 
+void test___onf_write_counts___should_WriteTheCounts(void)
+{
+  struct onf_rya_int_array* counts = onf_rya_int_array_new(3);
+  assert(counts);
+
+  counts->array[0] = 1;
+  counts->array[1] = 2;
+  counts->array[2] = 3;
+
+  size_t num_written = onf_write_counts(counts, "test.dat");
+
+  TEST_ASSERT_EQUAL(RYA_OKAY, num_written);
+}
+
+////////////////////
+
+void test___onf_read_counts___should_ReadTheCounts(void)
+{
+  struct onf_rya_int_array* counts = onf_rya_int_array_new(3);
+  assert(counts);
+
+  counts->array[0] = 1;
+  counts->array[1] = 2;
+  counts->array[2] = 3;
+
+  size_t num_written = onf_write_counts(counts, "test.dat");
+  assert(num_written == RYA_OKAY);
+
+  struct onf_rya_int_array* actual_counts = onf_read_counts("test.dat");
+  assert(actual_counts);
+
+  TEST_ASSERT_EQUAL(3, actual_counts->length);
+
+  TEST_ASSERT_EQUAL_INT32_ARRAY(counts->array, actual_counts->array, 3);
+}
+
+////////////////////
+
 void test___onf_encode_seq___should_EncodeTheSequence(void)
 {
   char* seq = "AaNnCcTtGgXx";
-  size_t len           = 12;
-  rya_int    encoded_seq[] = {0, 0, 1, 1, 2, 2, 3, 3};
+  size_t  len           = 12;
+  rya_int encoded_seq[] = {0, 0, 1, 1, 2, 2, 3, 3};
 
   struct onf_rya_int_array* actual = onf_encode_seq(seq, len);
 
@@ -152,8 +190,8 @@ void test___onf_encode_seq___should_EncodeTheSequence(void)
 void test___onf_encode_seq___should_NotEncodeWeirdChars(void)
 {
   char* seq = "@% a_c-?";
-  size_t len           = 8;
-  rya_int    encoded_seq[] = {0, 1};
+  size_t  len           = 8;
+  rya_int encoded_seq[] = {0, 1};
 
   struct onf_rya_int_array* actual = onf_encode_seq(seq, len);
 
@@ -192,8 +230,8 @@ void test___onf_hash_rya_int_array___should_HashTheSeq(void)
 
 void test___onf_hash_rya_int_array___should_ReturnAnErrorCodeIfHasBadInts(void)
 {
-  size_t len    = 5;
-  rya_int    actual = 0;
+  size_t  len    = 5;
+  rya_int actual = 0;
 
   struct onf_rya_int_array* ary = onf_rya_int_array_new(len);
 
@@ -252,7 +290,7 @@ void test___onf_hash_rya_int_array___should_HashBigThingsFine(void)
   rya_int length = 12;
   rya_int ints[] = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
   struct onf_rya_int_array* ary = onf_rya_int_array_new(12);
-  ary->array = (rya_int*) &ints;
+  ary->array = (rya_int * ) & ints;
 
   rya_int hashed = onf_hash_rya_int_array(ary);
   TEST_ASSERT_EQUAL(1776411, hashed);
@@ -265,7 +303,7 @@ void test___onf_hash_rya_int_array___should_BigHashTest1(void)
   rya_int length = 15;
   rya_int ints[] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
   struct onf_rya_int_array* ary = onf_rya_int_array_new(15);
-  ary->array = (rya_int*) &ints;
+  ary->array = (rya_int * ) & ints;
 
   rya_int hashed = onf_hash_rya_int_array(ary);
   TEST_ASSERT_EQUAL(1073741823, hashed);
@@ -277,7 +315,7 @@ void test___onf_hash_rya_int_array___should_ReturnErrorOnOverflow(void)
   rya_int ints[] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
 
   struct onf_rya_int_array* ary = onf_rya_int_array_new(len);
-  ary->array = (rya_int*) &ints;
+  ary->array = (rya_int * ) & ints;
 
   rya_int hashed = onf_hash_rya_int_array(ary);
 
@@ -289,9 +327,9 @@ void test___onf_hash_rya_int_array___should_ReturnErrorOnOverflow(void)
 
 void test___onf_kmer_count_array_new___should_ReturnNewKmerCountArray(void)
 {
-  size_t size        = 2;
-  size_t output_size = 16;
-  rya_int    expected[]  = {
+  size_t  size        = 2;
+  size_t  output_size = 16;
+  rya_int expected[]  = {
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,

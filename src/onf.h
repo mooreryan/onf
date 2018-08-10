@@ -49,6 +49,11 @@ tommy_array* onf_read_seqs(const char* fname);
  */
 struct onf_rya_int_array** onf_count_seq_kmers2(tommy_array* seqs);
 
+rya_int onf_write_counts(struct onf_rya_int_array* counts, const char* fname);
+struct onf_rya_int_array* onf_read_counts(const char* fname);
+
+///////////////////////
+
 /**
  * @brief Encodes a nucleotide sequence as an integer array.
  *

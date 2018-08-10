@@ -131,6 +131,77 @@ struct onf_rya_int_array** onf_count_seq_kmers2(tommy_array* seqs)
   return counts;
 }
 
+rya_int onf_write_counts(struct onf_rya_int_array* counts, const char* fname)
+{
+  if (fname == NULL) { return RYA_ERROR_INT; }
+
+  FILE* outf = fopen(fname, "wb");
+  if (outf == NULL) {
+    fprintf(stderr, "ERROR -- could not open %s for writing\n", fname);
+
+    return ONF_ERROR_INT32_T;
+  }
+
+  size_t val = fwrite(counts, sizeof(struct onf_rya_int_array), 1, outf);
+  fclose(outf);
+
+  // TODO double check this.
+  if (val != 1) {
+    fprintf(stderr, "ERROR -- problem writing counts to %s\n", fname);
+
+    return RYA_ERROR_INT;
+  }
+  else {
+    return RYA_OKAY;
+  }
+}
+
+struct onf_rya_int_array* onf_read_counts(const char* fname)
+{
+
+  if (rya_file_exist(fname) != rya_true) {
+    fprintf(stderr, "ERROR -- file doesn't exist: %s\n", fname);
+
+    return ONF_ERROR_PTR;
+  }
+
+  if (fname == NULL) {
+    fprintf(stderr, "ERROR -- fname was null\n");
+
+    return ONF_ERROR_PTR;
+  }
+
+  FILE* inf = fopen(fname, "rb");
+  if (inf == NULL) {
+    fprintf(stderr, "ERROR -- couldn't open %s for reading\n", fname);
+
+    return ONF_ERROR_PTR;
+  }
+
+  struct onf_rya_int_array* counts = malloc(sizeof(struct onf_rya_int_array));
+  if (counts == NULL) {
+    fprintf(stderr, "ERROR -- couldn't create counts array\n");
+
+    return ONF_ERROR_PTR;
+  }
+
+  size_t nitems = 0;
+
+  nitems = fread(counts, sizeof(struct onf_rya_int_array), 1, inf);
+
+  // TODO to properly handle error you need to check for end of file.
+  if (nitems != 1) {
+    if (!feof(inf)) {
+      fprintf(stderr, "ERROR -- didn't read correct number of items.  expected 1, got %zu\n", nitems);
+
+      return ONF_ERROR_PTR;
+    }
+  }
+
+  assert(counts);
+  return counts;
+}
+
 
 struct onf_rya_int_array* onf_encode_seq(char* seq, size_t len)
 {
