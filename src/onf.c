@@ -131,30 +131,59 @@ struct onf_rya_int_array** onf_count_seq_kmers2(tommy_array* seqs)
   return counts;
 }
 
-rya_int onf_write_counts(struct onf_rya_int_array* counts, const char* fname)
+rya_int onf_write_counts(struct onf_rya_int_array* counts, FILE* fstream)
 {
-  if (fname == NULL) { return RYA_ERROR_INT; }
+  if (fstream == NULL) { return RYA_ERROR_INT; }
 
-  FILE* outf = fopen(fname, "wb");
-  if (outf == NULL) {
-    fprintf(stderr, "ERROR -- could not open %s for writing\n", fname);
+  // TODO check that the stream is open and writeable
+  // TODO check that counts is not null.
 
-    return ONF_ERROR_INT32_T;
-  }
-
-  size_t val = fwrite(counts, sizeof(struct onf_rya_int_array), 1, outf);
-  fclose(outf);
+  size_t val = fwrite(counts, sizeof(struct onf_rya_int_array), 1, fstream);
 
   // TODO double check this.
   if (val != 1) {
-    fprintf(stderr, "ERROR -- problem writing counts to %s\n", fname);
+    fprintf(stderr, "ERROR -- problem writing counts\n");
 
     return RYA_ERROR_INT;
   }
   else {
-    return RYA_OKAY;
+    return RYA_OKAY_INT;
   }
 }
+
+rya_int onf_write_counts2(struct onf_rya_int_array** count_arrays, const char* fname)
+{
+  if (count_arrays == NULL) {
+    return RYA_ERROR_INT;
+  }
+  if (fname == NULL) {
+    return RYA_ERROR_INT;
+  }
+
+  FILE* fstream = fopen(fname, "wb");
+  if (fstream == NULL) {
+    fprintf(stderr, "ERROR -- could not open for writing\n");
+
+    return RYA_ERROR_INT;
+  }
+
+  // There will always be three in the count arrays. TODO assert this.
+  for (int i = 0; i < 3; ++i) {
+    assert(count_arrays[i]);
+
+    if (onf_write_counts(count_arrays[i], fstream) != RYA_OKAY_INT) {
+      fprintf(stderr,
+              "ERROR -- could not write counts for idx: %d\n", i);
+
+      return RYA_ERROR_INT;
+    }
+  }
+
+  fclose(fstream);
+
+  return RYA_OKAY_INT;
+}
+
 
 struct onf_rya_int_array* onf_read_counts(const char* fname)
 {

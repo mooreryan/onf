@@ -144,11 +144,41 @@ void test___onf_write_counts___should_WriteTheCounts(void)
   counts->array[1] = 2;
   counts->array[2] = 3;
 
-  size_t num_written = onf_write_counts(counts, "test.dat");
+  FILE* fstream = fopen("test.dat", "wb");
+  assert(fstream);
 
-  TEST_ASSERT_EQUAL(RYA_OKAY, num_written);
+  size_t num_written = onf_write_counts(counts, fstream);
+
+  fclose(fstream);
+
+  TEST_ASSERT_EQUAL(RYA_OKAY_INT, num_written);
 }
 
+////////////////////
+
+void test___onf_write_counts2___should_WriteTheCounts(void)
+{
+  rstring* this_file = rstring_new(__FILE__);
+  assert(this_file);
+
+  rstring* dirname = rfile_dirname(this_file);
+  assert(dirname);
+
+  rstring* path = rstring_format("%s/test_files/seqs/s2.fa", rstring_data(dirname));
+  assert(path);
+
+  tommy_array* seqs = onf_read_seqs(rstring_data(path));
+  assert(seqs);
+
+  struct onf_rya_int_array** counts = onf_count_seq_kmers2(seqs);
+  assert(counts);
+
+  rya_int ret_val = onf_write_counts2(counts, "test.dat");
+
+  TEST_ASSERT_EQUAL(RYA_OKAY_INT, ret_val);
+
+  //TODO perhaps test the actual values.
+}
 ////////////////////
 
 void test___onf_read_counts___should_ReadTheCounts(void)
@@ -160,8 +190,13 @@ void test___onf_read_counts___should_ReadTheCounts(void)
   counts->array[1] = 2;
   counts->array[2] = 3;
 
-  size_t num_written = onf_write_counts(counts, "test.dat");
-  assert(num_written == RYA_OKAY);
+  FILE* fstream = fopen("test.dat", "wb");
+  assert(fstream);
+
+  size_t num_written = onf_write_counts(counts, fstream);
+  assert(num_written == RYA_OKAY_INT);
+
+  fclose(fstream);
 
   struct onf_rya_int_array* actual_counts = onf_read_counts("test.dat");
   assert(actual_counts);

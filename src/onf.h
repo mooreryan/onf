@@ -49,7 +49,15 @@ tommy_array* onf_read_seqs(const char* fname);
  */
 struct onf_rya_int_array** onf_count_seq_kmers2(tommy_array* seqs);
 
-rya_int onf_write_counts(struct onf_rya_int_array* counts, const char* fname);
+rya_int onf_write_counts(struct onf_rya_int_array* counts, FILE* fstream);
+
+/**
+ * @brief Like onf_write_counts() but works on the big_si count array
+ * @param count_arrays
+ * @param fname
+ * @retval TODO
+ */
+rya_int onf_write_counts2(struct onf_rya_int_array** count_arrays, const char* fname);
 struct onf_rya_int_array* onf_read_counts(const char* fname);
 
 ///////////////////////

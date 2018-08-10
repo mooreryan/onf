@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#define RYA_OKAY 1
+#define RYA_OKAY_INT 1
 #define RYA_ERROR_INT -10
 #define RYA_ERROR_PTR NULL
 
