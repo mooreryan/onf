@@ -7,13 +7,14 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <rya.h>
 
 #include "main.h"
 #include "array.h"
 #include "const.h"
 #include "file.h"
 #include "onf.h"
-#include "rya.h"
 #include "tommyarray.h"
 #include "rlib.h"
 
@@ -22,23 +23,41 @@
 
 #ifdef OPENMP
 
-  #include <omp.h>
+#include <omp.h>
 
 #endif
 
 
 int main(int argc, char* argv[])
 {
-  if (argc != 3) {
+  if (argc != 4) {
     fprintf(stderr, "\n\nonf %s\n\n", ONF_VERSION);
-    fprintf(stderr, "usage: %s num_threads /dir/with/sequence/files\n", argv[0]);
+    fprintf(stderr, "usage: %s num_threads /dir/with/sequence/files outdir\n", argv[0]);
+
+    return 1;
   }
 
   char* arg_num_threads = argv[1];
   char* arg_input_dir   = argv[2];
+  char* arg_output_dir  = argv[3];
 
   size_t num_input_files = 0;
   size_t z               = 0;
+
+  // Make the modelDir if it does not exist.
+  struct stat st;
+
+  // Check for existence.
+  if (stat(arg_output_dir, &st) < 0) {
+    // If not, create the directory.
+    // read/write/search permissions for owner and group.
+    // read/search permissions for others.
+    if (mkdir(arg_output_dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
+      fprintf(stderr, "ERROR -- cannot create directory %s\n", arg_output_dir);
+
+      return 1;
+    }
+  }
 
 #ifdef OPENMP
   omp_set_num_threads(3);
@@ -76,7 +95,13 @@ int main(int argc, char* argv[])
       continue;
     }
 
-    rstring* counts_fname = rstring_format("%s.count_dat", fname);
+    // TODO check all the rstrings
+    rstring* rstring_fname = rstring_new(fname);
+    rstring* indir = rfile_dirname(rstring_fname);
+    rstring* extname = rfile_extname(rstring_fname);
+    rstring* base = rfile_basename2(rstring_fname, extname);
+    rstring* counts_fname = rstring_format("%s/%s.onf_count_dat", arg_output_dir, rstring_data(base));
+
     if (!counts_fname) {
       // TODO free seqs
       // TODO free counts

@@ -2,7 +2,7 @@
 #include "file.h"
 #include "cute_files.h"
 #include "tommyarray.h"
-#include "rya.h"
+#include <rya_file.h>
 
 #include <assert.h>
 

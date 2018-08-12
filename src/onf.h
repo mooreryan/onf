@@ -11,7 +11,7 @@
 
 #include "tommyarray.h"
 #include "array.h"
-#include "rya.h"
+#include <rya.h>
 
 /**
  * @brief Light wrapper for fasta records.

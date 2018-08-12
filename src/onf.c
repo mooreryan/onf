@@ -8,7 +8,7 @@
 
 #include <math.h> // For pow
 
-#include "rya.h"
+#include <rya_file.h>
 #include "const.h"
 #include "onf.h"
 #include "kseq_helper.h"
