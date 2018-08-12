@@ -4,6 +4,7 @@
 #include "tommyarray.h"
 #include "rlib.h"
 #include "rya.h"
+#include "array.h"
 
 #include <stdlib.h>
 #include <string.h>
