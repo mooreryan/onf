@@ -30,19 +30,24 @@
 
 int main(int argc, char* argv[])
 {
-  if (argc != 4) {
+  if (argc != 5) {
     fprintf(stderr, "\n\nonf %s\n\n", ONF_VERSION);
-    fprintf(stderr, "usage: %s num_threads /dir/with/sequence/files outdir\n", argv[0]);
+    fprintf(stderr, "usage: %s num_threads /dir/with/host/files /dir/with/virus/files outdir\n", argv[0]);
 
     return 1;
   }
 
   char* arg_num_threads = argv[1];
-  char* arg_input_dir   = argv[2];
-  char* arg_output_dir  = argv[3];
+  // TODO actually set the number of threads
+      
+  char* arg_host_dir   = argv[2];
+  char* arg_virus_dir  = argv[3];
+  char* arg_output_dir = argv[4];
 
-  size_t num_input_files = 0;
-  size_t z               = 0;
+  size_t num_input_files       = 0;
+  size_t num_input_files_virus = 0;
+  size_t num_input_files_host  = 0;
+  size_t z                     = 0;
 
   // Make the modelDir if it does not exist.
   struct stat st;
@@ -66,10 +71,28 @@ int main(int argc, char* argv[])
   //#pragma omp parallel for schedule(dynamic) private(z)
 //  for (z = 0; z < TIMES; ++z) { ; }
 
-  tommy_array* fnames = onf_file_files_in_dir(arg_input_dir);
+  tommy_array* fnames = malloc(sizeof(tommy_array));
   assert(fnames);
-  num_input_files = tommy_array_size(fnames);
+  tommy_array_init(fnames);
 
+
+  tommy_array* host_fnames = onf_file_files_in_dir(arg_host_dir);
+  assert(host_fnames);
+  num_input_files_host = tommy_array_size(host_fnames);
+
+  tommy_array* virus_fnames = onf_file_files_in_dir(arg_virus_dir);
+  assert(virus_fnames);
+  num_input_files_virus = tommy_array_size(virus_fnames);
+
+  num_input_files = num_input_files_host + num_input_files_virus;
+
+  for (int i = 0; i < num_input_files_host; ++i) {
+    tommy_array_insert(fnames, tommy_array_get(host_fnames, i));
+  }
+
+  for (int i = 0; i < num_input_files_virus; ++i) {
+    tommy_array_insert(fnames, tommy_array_get(virus_fnames, i));
+  }
 #pragma omp parallel for schedule(auto) private(z)
   for (z = 0; z < num_input_files; ++z) {
 //    printf("%2zu. %s\n", z, (char*)tommy_array_get(fnames, z));
@@ -97,10 +120,10 @@ int main(int argc, char* argv[])
 
     // TODO check all the rstrings
     rstring* rstring_fname = rstring_new(fname);
-    rstring* indir = rfile_dirname(rstring_fname);
-    rstring* extname = rfile_extname(rstring_fname);
-    rstring* base = rfile_basename2(rstring_fname, extname);
-    rstring* counts_fname = rstring_format("%s/%s.onf_count_dat", arg_output_dir, rstring_data(base));
+    rstring* indir         = rfile_dirname(rstring_fname);
+    rstring* extname       = rfile_extname(rstring_fname);
+    rstring* base          = rfile_basename2(rstring_fname, extname);
+    rstring* counts_fname  = rstring_format("%s/%s.onf_count_dat", arg_output_dir, rstring_data(base));
 
     if (!counts_fname) {
       // TODO free seqs
