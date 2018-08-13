@@ -15,7 +15,9 @@ old_makefiles
 
 # Development build folder
 cmake-build-debug
+cmake-build-valgrind/
 test.dat
 
 # Has a bunch of genomes
 test/test_files/main
+

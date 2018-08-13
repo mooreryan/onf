@@ -138,17 +138,23 @@ rya_int onf_write_counts(struct onf_rya_int_array* counts, FILE* fstream)
   // TODO check that the stream is open and writeable
   // TODO check that counts is not null.
 
-  size_t val = fwrite(counts, sizeof(struct onf_rya_int_array), 1, fstream);
+  size_t val = fwrite(&counts->length, sizeof(int), 1, fstream);
 
   // TODO double check this.
   if (val != 1) {
-    fprintf(stderr, "ERROR -- problem writing counts\n");
+    fprintf(stderr, "ERROR -- problem writing array length.  (ret val was %zu)\n", val);
 
     return RYA_ERROR_INT;
   }
-  else {
-    return RYA_OKAY_INT;
+
+  val = fwrite(counts->array, sizeof(*counts->array), counts->length, fstream);
+  if (val != counts->length) {
+    fprintf(stderr, "ERROR -- problem writing arrya counts.  (ret val was %zu)\n", val);
+
+    return RYA_ERROR_INT;
   }
+
+  return RYA_OKAY_INT;
 }
 
 rya_int onf_write_counts2(struct onf_rya_int_array** count_arrays, const char* fname)

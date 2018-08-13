@@ -8,6 +8,7 @@
 #define _ONF_H
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "tommyarray.h"
 #include "array.h"
